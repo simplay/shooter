@@ -9,7 +9,6 @@ class Game {
   ~Game();
   bool init();
   void run();
-  void clean();
 
  private:
   // Screen dimension constants

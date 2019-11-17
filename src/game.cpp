@@ -6,7 +6,11 @@ Game::Game() {
   renderer = nullptr;
 }
 
-Game::~Game() {}
+Game::~Game() {
+  std::cout << "Freeing resources.." << std::endl;
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
 
 bool Game::init() {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -32,8 +36,3 @@ bool Game::init() {
 }
 
 void Game::run() { SDL_Delay(3000); }
-
-void Game::clean() {
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-}
