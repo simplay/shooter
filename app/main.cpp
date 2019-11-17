@@ -14,9 +14,9 @@ int main(int argc, char *argv[]) {
 
   if (!game->init()) {
     Logger().log("Could not initialize the game");
+  } else {
+    game->run();
   }
-
-  game->run();
 
   return 0;
 }
