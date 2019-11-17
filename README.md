@@ -1,0 +1,42 @@
+# Shooter
+
+## Dependencies
+
++ `cmake >= 3.1.3`
++ `gcc`
++ `libsdl2`
+
+### Ubuntu
+
+`sudo apt install cmake libsdl2-dev g++`
+
+## Setup
+
+1. Clone this repository: `$ git@github.com:simplay/shooter.git`
+2. Fetch and update all external dependencies: `$ git submodule update --init --recursive`
+
+## Building
+
+Build by making a build directory (i.e. `build/`), run `cmake` in that dir, and then use `make` to build the desired target:
+
+``` bash
+$ mkdir build && cd build
+$ cmake .. -DCMAKE_BUILD_TYPE=[Debug | Coverage | Release]
+$ make
+```
+
+## Usage
+
+Inside `build/`, execute `./main.x`
+
+## Running the tests
+
+Inside `build/`, execute `./unit_tests.x`
+
+## Contributing
+
+1. Fork this repository
+2. Create your feature branch `git checkout -b my-new-feature`
+3. Commit your changes `git commit -am "Add some feature"`
+4. Push to the branch `git push origin my-new-feature`
+5. Create new Pull Request (in your forked repository)

@@ -1,0 +1,9 @@
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/svn2github/googletest.git
+[submodule "external/googlebenchmark"]
+	path = external/googlebenchmark
+	url = https://github.com/google/benchmark.git
+[submodule "external/cxxopts"]
+	path = external/cxxopts
+	url = https://github.com/jarro2783/cxxopts
