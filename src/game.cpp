@@ -1,4 +1,6 @@
 #include "game.h"
+#include "player.h"
+#include "vec3f.h"
 #include <iostream>
 
 Game::Game() {
@@ -35,4 +37,13 @@ bool Game::init() {
   return true;
 }
 
-void Game::run() { SDL_Delay(3000); }
+void Game::run() {
+  Vec3f p(1, 2, 3);
+  Vec3f v(1, 2, 3);
+  Player player(p, v);
+  std::cout << player.position.y << std::endl;
+  player.position.y = 22.0;
+  std::cout << player.position.y << std::endl;
+
+  SDL_Delay(3000);
+}
