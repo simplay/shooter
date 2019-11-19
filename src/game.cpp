@@ -1,7 +1,9 @@
 #include "game.h"
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
 #include "player.h"
 #include "vec3f.h"
-#include <iostream>
 
 Game::Game() {
   window = nullptr;
@@ -15,6 +17,22 @@ Game::~Game() {
 }
 
 bool Game::init() {
+  // Init Game-State
+  using json = nlohmann::json;
+  std::ifstream filestream("../maps/map.json");
+  json map;
+  filestream >> map;
+  // std::cout << map << std::endl;
+
+  float playerX = map["player"]["x"];
+  float playerY = map["player"]["y"];
+
+  Vec3f p(playerX, playerY, 3);
+  Vec3f v(0, 0, 0);
+  Player player(p, v);
+  std::cout << "player pos: ("<< player.position.x << ", " << player.position.y << ")" << std::endl;
+
+  // Init renderer
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cout << "Could not initialize SDL: " << SDL_GetError() << std::endl;
     return false;
@@ -38,12 +56,5 @@ bool Game::init() {
 }
 
 void Game::run() {
-  Vec3f p(1, 2, 3);
-  Vec3f v(1, 2, 3);
-  Player player(p, v);
-  std::cout << player.position.y << std::endl;
-  player.position.y = 22.0;
-  std::cout << player.position.y << std::endl;
-
   SDL_Delay(3000);
 }
