@@ -1,9 +1,11 @@
 #include "game.h"
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <nlohmann/json.hpp>
 #include "player.h"
 #include "vec3f.h"
+#include "vec2f.h"
 
 Game::Game() {
   window = nullptr;
@@ -30,7 +32,20 @@ bool Game::init() {
   Vec3f p(playerX, playerY, 3);
   Vec3f v(0, 0, 0);
   Player player(p, v);
-  std::cout << "player pos: ("<< player.position.x << ", " << player.position.y << ")" << std::endl;
+  // std::cout << "player pos: ("<< player.position.x << ", " << player.position.y << ")" << std::endl;
+
+  std::map<int, Vec2f> vertices;
+  for(auto vertex : map["vertices"]) {
+    std::cout << vertex << std::endl;
+    int vertexId = vertex["id"];
+    float vx = vertex["x"];
+    float vy = vertex["y"];
+    vertices.emplace(vertexId, Vec2f(vx, vy));
+  }
+
+  // for(auto const& entry : vertices) {
+  //   std::cout << entry.second.x << " " << entry.second.y << std::endl;
+  // }
 
   // Init renderer
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
