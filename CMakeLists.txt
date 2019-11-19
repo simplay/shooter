@@ -57,6 +57,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/external/googletest/include
   ${PROJECT_SOURCE_DIR}/external/cxxopts/include
+  ${PROJECT_SOURCE_DIR}/external/json/single_include
   ${SDL2_INCLUDE_DIRS}
 )
 
