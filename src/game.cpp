@@ -12,10 +12,16 @@
 Game::Game() {
   window = nullptr;
   renderer = nullptr;
+  texture = nullptr;
+  pixels = nullptr;
 }
 
 Game::~Game() {
   std::cout << "Freeing resources.." << std::endl;
+
+  delete[] pixels;
+  SDL_DestroyTexture(texture);
+  SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
 }
@@ -73,21 +79,57 @@ bool Game::init() {
     return false;
   }
 
-  SDL_Window *window =
-      SDL_CreateWindow("Shooter Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                       SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  window = SDL_CreateWindow("Shooter Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                            SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
   if (!window) {
     std::cout << "Could not create window: " << SDL_GetError() << std::endl;
     return false;
   }
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-  SDL_RenderClear(renderer);
-  SDL_RenderPresent(renderer);
+
+  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC,
+                              SCREEN_WIDTH, SCREEN_HEIGHT);
+  pixels = new Uint32[SCREEN_WIDTH * SCREEN_HEIGHT];
+
+  memset(pixels, 255, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
 
   return true;
 }
 
-void Game::run() { SDL_Delay(3000); }
+void Game::run() {
+  bool leftMouseButtonDown = false;
+  bool quit = false;
+  SDL_Event event;
+
+  while (!quit) {
+    SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
+    SDL_WaitEvent(&event);
+
+    switch (event.type) {
+      case SDL_MOUSEBUTTONUP:
+        if (event.button.button == SDL_BUTTON_LEFT)
+          leftMouseButtonDown = false;
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        if (event.button.button == SDL_BUTTON_LEFT)
+          leftMouseButtonDown = true;
+      case SDL_MOUSEMOTION:
+        if (leftMouseButtonDown) {
+          int mouseX = event.motion.x;
+          int mouseY = event.motion.y;
+          pixels[mouseY * SCREEN_WIDTH + mouseX] = 0;
+        }
+        break;
+      case SDL_QUIT:
+        quit = true;
+        break;
+    }
+
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+  }
+}

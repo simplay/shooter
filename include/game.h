@@ -16,7 +16,9 @@ class Game {
   const int SCREEN_HEIGHT = 480;
 
   SDL_Window* window;
-  SDL_Window* renderer;
+  SDL_Renderer* renderer;
+  SDL_Texture* texture;
+  Uint32* pixels;
 };
 
 #endif
