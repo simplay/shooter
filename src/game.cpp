@@ -3,7 +3,9 @@
 #include <iostream>
 #include <map>
 #include <nlohmann/json.hpp>
+#include <vector>
 #include "player.h"
+#include "sector.h"
 #include "vec2f.h"
 #include "vec3f.h"
 
@@ -37,7 +39,6 @@ bool Game::init() {
 
   std::map<int, Vec2f> vertices;
   for (auto vertex : map["vertices"]) {
-    std::cout << vertex << std::endl;
     int vertexId = vertex["id"];
     float vx = vertex["x"];
     float vy = vertex["y"];
@@ -46,6 +47,24 @@ bool Game::init() {
 
   // for(auto const& entry : vertices) {
   //   std::cout << entry.second.x << " " << entry.second.y << std::endl;
+  // }
+
+  std::map<int, Sector> sectors;
+  for (auto segment : map["segments"]) {
+    int sectorId = segment["id"];
+    float floor = segment["floor"];
+    float ceil = segment["ceil"];
+
+    std::vector<Vec2f> sectorVertices;
+    for (int vertIdx : segment["vertices"]) {
+      sectorVertices.push_back(vertices.at(vertIdx));
+    }
+
+    sectors.emplace(sectorId, Sector(floor, ceil, sectorVertices));
+  }
+
+  // for(auto const& entry : sectors) {
+  //   std::cout << entry.second.ceil << " " << entry.second.floor << std::endl;
   // }
 
   // Init renderer

@@ -1,6 +1,7 @@
-#include "vec3f.h"
 #ifndef PLAYER_H
 #define PLAYER_H
+
+#include "vec3f.h"
 
 class Player {
  public:
