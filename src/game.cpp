@@ -9,6 +9,10 @@
 #include "vec2f.h"
 #include "vec3f.h"
 
+#define min(a, b) (((a) < (b)) ? (a) : (b))   // min: Choose smaller of two scalars.
+#define max(a, b) (((a) > (b)) ? (a) : (b))   // max: Choose greater of two scalars.
+#define clamp(a, mi, ma) min(max(a, mi), ma)  // clamp: Clamp value into set range.
+
 Game::Game() {
   window = nullptr;
   renderer = nullptr;
@@ -24,6 +28,23 @@ Game::~Game() {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
+}
+
+void Game::drawVerticalLine(int x, int yTop, int yBottom, int topColor, int fillColor,
+                            int bottomColor) {
+
+  yTop = clamp(yTop, 0, SCREEN_HEIGHT - 1);
+  yBottom = clamp(yBottom, 0, SCREEN_HEIGHT - 1);
+
+  if (yBottom == yTop) {
+    pixels[yTop * SCREEN_WIDTH + x] = fillColor;
+  } else if (yBottom > yTop) {
+    pixels[yTop * SCREEN_WIDTH + x] = topColor;
+    for (int y = yTop + 1; y < yBottom; ++y) {
+      pixels[y * SCREEN_WIDTH + x] = fillColor;
+    }
+    pixels[yBottom * SCREEN_WIDTH + x] = bottomColor;
+  }
 }
 
 bool Game::init() {
@@ -104,9 +125,16 @@ void Game::run() {
   bool quit = false;
   SDL_Event event;
 
+  int drawValue = 0;
+  int width = 10;
+
   while (!quit) {
     SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
     SDL_WaitEvent(&event);
+
+    for (int k = 10; k < 30; k++) {
+      drawVerticalLine(k, 10, 400, 0x0000FF, 0xFF0000, 0x00FF00);
+    }
 
     switch (event.type) {
       case SDL_MOUSEBUTTONUP:
@@ -114,13 +142,20 @@ void Game::run() {
           leftMouseButtonDown = false;
         break;
       case SDL_MOUSEBUTTONDOWN:
-        if (event.button.button == SDL_BUTTON_LEFT)
+        if (event.button.button == SDL_BUTTON_LEFT) {
           leftMouseButtonDown = true;
+        } else if (event.button.button == SDL_BUTTON_RIGHT) {
+          drawValue += 32 % 256;
+        }
       case SDL_MOUSEMOTION:
         if (leftMouseButtonDown) {
           int mouseX = event.motion.x;
           int mouseY = event.motion.y;
-          pixels[mouseY * SCREEN_WIDTH + mouseX] = 0;
+          for (int x = mouseX - width; x < mouseX + width; x++) {
+            for (int y = mouseY - width; y < mouseY + width; y++) {
+              pixels[y * SCREEN_WIDTH + x] = drawValue;
+            }
+          }
         }
         break;
       case SDL_QUIT:
