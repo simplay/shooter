@@ -32,7 +32,6 @@ Game::~Game() {
 
 void Game::drawVerticalLine(int x, int yTop, int yBottom, int topColor, int fillColor,
                             int bottomColor) {
-
   yTop = clamp(yTop, 0, SCREEN_HEIGHT - 1);
   yBottom = clamp(yBottom, 0, SCREEN_HEIGHT - 1);
 
@@ -45,6 +44,10 @@ void Game::drawVerticalLine(int x, int yTop, int yBottom, int topColor, int fill
     }
     pixels[yBottom * SCREEN_WIDTH + x] = bottomColor;
   }
+}
+
+void Game::drawVerticalLine(int x, int yTop, int yBottom, int color) {
+  drawVerticalLine(x, yTop, yBottom, color, color, color);
 }
 
 bool Game::init() {
@@ -120,6 +123,22 @@ bool Game::init() {
   return true;
 }
 
+Uint32 Game::colorAt(int x, int y) {
+  // choose wall color
+  switch (worldMap[x][y]) {
+    case 1:
+      return Red;
+    case 2:
+      return Green;
+    case 3:
+      return Blue;
+    case 4:
+      return Turquoise;
+    default:
+      return Yellow;
+  }
+}
+
 void Game::run() {
   bool leftMouseButtonDown = false;
   bool quit = false;
@@ -128,18 +147,162 @@ void Game::run() {
   int drawValue = 0;
   int width = 10;
 
+  Vec2f cameraPlane(0, 1);
+  Vec2f viewDirection(-1, 0);
+  Vec2f position(22, 12);
+
+  // speed modifiers
+  double fps = 60 / 1000.0;  // assumption: 60 ms per frame
+
+  double moveSpeed = fps * 5.0;  // squares per second
+  double rotSpeed = fps * 3.0;   // radians per second
+
   while (!quit) {
     SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
     SDL_WaitEvent(&event);
 
-    for (int k = 10; k < 30; k++) {
-      drawVerticalLine(k, 10, 400, 0x0000FF, 0xFF0000, 0x00FF00);
+    for (int x = 0; x < SCREEN_WIDTH; x++) {
+      // calculate ray position and direction
+      // x-coordinate in camera space
+      double cameraX = 2 * x / double(SCREEN_WIDTH) - 1;
+
+      double rayDirX = viewDirection.x + cameraPlane.x * cameraX;
+      double rayDirY = viewDirection.y + cameraPlane.y * cameraX;
+
+      // distance between ray's start position and first-side
+      // deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX))
+      // which can be simplfied to:
+      double deltaDistX = std::abs(1 / rayDirX);
+      double deltaDistY = std::abs(1 / rayDirY);
+
+      // what direction to step in x or y-direction (either +1 or -1)
+      int stepX = 0;
+      int stepY = 0;
+
+      // the current grid location in the map at which the ray is in
+      int mapX = int(position.x);
+      int mapY = int(position.y);
+
+      // length of ray from current position to next x- / y-side
+      double sideDistX = 0;
+      double sideDistY = 0;
+
+      // calculate step and initial sideDist
+      if (rayDirX < 0) {
+        stepX = -1;
+        sideDistX = (position.x - mapX) * deltaDistX;
+      } else {
+        stepX = 1;
+        sideDistX = (mapX + 1.0 - position.x) * deltaDistX;
+      }
+
+      if (rayDirY < 0) {
+        stepY = -1;
+        sideDistY = (position.y - mapY) * deltaDistY;
+      } else {
+        stepY = 1;
+        sideDistY = (mapY + 1.0 - position.y) * deltaDistY;
+      }
+
+      // was there a wall hit?
+      bool hasHitWall = false;
+
+      // was a NS or a EW wall hit?
+      bool hitBoundary = false;
+
+      // perform DDA: jumps one square per iteration (either along x or y direction)
+      // See: https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
+      while (!hasHitWall) {
+        // jump to next map square, OR in x-direction, OR in y-direction
+        if (sideDistX < sideDistY) {
+          sideDistX += deltaDistX;
+          mapX += stepX;
+          hitBoundary = false;
+        } else {
+          sideDistY += deltaDistY;
+          mapY += stepY;
+          hitBoundary = true;
+        }
+
+        // Check if ray has hit a wall
+        if (worldMap[mapX][mapY] > 0) {
+          hasHitWall = true;
+        }
+      }
+
+      // Calculate distance projected on camera direction (Euclidean distance will give fisheye
+      // effect!)
+      double perpWallDist = 0;
+      if (!hitBoundary) {
+        perpWallDist = (mapX - position.x + 0.5 * (1 - stepX)) / rayDirX;
+      } else {
+        perpWallDist = (mapY - position.y + 0.5 * (1 - stepY)) / rayDirY;
+      }
+
+      // Calculate height of line to draw on screen
+      int lineHeight = (int)(SCREEN_HEIGHT / perpWallDist);
+
+      // calculate lowest and highest pixel to fill in current stripe
+      int drawStart = 0.5 * (SCREEN_HEIGHT - lineHeight);
+      if (drawStart < 0) {
+        drawStart = 0;
+      }
+
+      int drawEnd = 0.5 * (lineHeight + SCREEN_HEIGHT);
+      if (drawEnd >= SCREEN_HEIGHT) {
+        drawEnd = SCREEN_HEIGHT - 1;
+      }
+
+      Uint32 color = colorAt(mapX, mapY);
+
+      // give x and y sides different brightness
+      if (hitBoundary) {
+        color *= 0.5;
+      }
+      // draw the pixels of the stripe as a vertical line
+      drawVerticalLine(x, 0, SCREEN_HEIGHT, White);
+      drawVerticalLine(x, drawStart, drawEnd, color);
     }
 
     switch (event.type) {
+      case SDL_KEYUP:
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.sym) {
+          case SDLK_w:
+            if (!hitWall(position.x + viewDirection.x * moveSpeed, position.y)) {
+              // new_position += velocity * viewing_direction
+              position.x += viewDirection.x * moveSpeed;
+            }
+
+            if (!hitWall(position.x, position.y + viewDirection.y * moveSpeed)) {
+              position.y += viewDirection.y * moveSpeed;
+            }
+
+            break;
+          case SDLK_s:
+            if (!hitWall(position.x - viewDirection.x * moveSpeed, position.y)) {
+              position.x -= viewDirection.x * moveSpeed;
+            }
+
+            if (!hitWall(position.x, position.y - viewDirection.y * moveSpeed)) {
+              position.y -= viewDirection.y * moveSpeed;
+            }
+            break;
+          case SDLK_a:
+            viewDirection.rotate(rotSpeed);
+            cameraPlane.rotate(rotSpeed);
+            break;
+
+          case SDLK_d:
+            viewDirection.rotate(-rotSpeed);
+            cameraPlane.rotate(-rotSpeed);
+            break;
+        }
+
       case SDL_MOUSEBUTTONUP:
-        if (event.button.button == SDL_BUTTON_LEFT)
+        if (event.button.button == SDL_BUTTON_LEFT) {
           leftMouseButtonDown = false;
+        }
         break;
       case SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_LEFT) {
@@ -147,6 +310,7 @@ void Game::run() {
         } else if (event.button.button == SDL_BUTTON_RIGHT) {
           drawValue += 32 % 256;
         }
+        break;
       case SDL_MOUSEMOTION:
         if (leftMouseButtonDown) {
           int mouseX = event.motion.x;
@@ -168,3 +332,5 @@ void Game::run() {
     SDL_RenderPresent(renderer);
   }
 }
+
+bool Game::hitWall(int x, int y) { return worldMap[x][y] != 0; }

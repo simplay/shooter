@@ -7,5 +7,7 @@ class Vec2f {
   float y;
 
   Vec2f(float x, float y);
+
+  void rotate(float angle);
 };
 #endif
