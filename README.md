@@ -10,19 +10,23 @@
 
 `sudo apt install cmake libsdl2-dev g++`
 
+### Max OS X
+
+`brew install sdl2`
+
 ## Setup
 
-1. Clone this repository: `$ git@github.com:simplay/shooter.git`
-2. Fetch and update all external dependencies: `$ git submodule update --init --recursive`
+1. Clone this repository: `git@github.com:simplay/shooter.git`
+2. Fetch and update all external dependencies: `git submodule update --init --recursive`
 
 ## Building
 
 Build by making a build directory (i.e. `build/`), run `cmake` in that dir, and then use `make` to build the desired target:
 
 ``` bash
-$ mkdir build && cd build
-$ cmake .. -DCMAKE_BUILD_TYPE=Release
-$ make
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
 ```
 
 ## Usage
