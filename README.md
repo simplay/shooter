@@ -21,7 +21,7 @@ Build by making a build directory (i.e. `build/`), run `cmake` in that dir, and 
 
 ``` bash
 $ mkdir build && cd build
-$ cmake .. -DCMAKE_BUILD_TYPE=[Debug | Coverage | Release]
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
 $ make
 ```
 
