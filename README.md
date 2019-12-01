@@ -1,5 +1,7 @@
 # Shooter
 
+[![Build Status](https://travis-ci.org/simplay/shooter.svg?branch=master)](https://travis-ci.org/simplay/shooter)
+
 ## Dependencies
 
 + `cmake >= 3.1.3`
