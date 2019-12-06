@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 
   Logger().log(oss.str());
 
-  std::shared_ptr<Game> game(new Game());
+  std::shared_ptr<Game> game(new Game(50, 30));
 
   if (!game->init()) {
     Logger().log("Could not initialize the game");
