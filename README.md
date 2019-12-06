@@ -35,6 +35,10 @@ make
 
 Inside `build/`, execute `./main.x`
 
+## Help
+
+Inside `build/`, execute `./main.x --help`
+
 ## Running the tests
 
 Inside `build/`, execute `./unit_tests.x`
