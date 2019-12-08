@@ -3,6 +3,7 @@
 #include "exampleConfig.h"
 #include "game.h"
 #include "logger.h"
+#include "maze_builder.h"
 
 cxxopts::ParseResult parse(int argc, char* argv[]) {
   // clang-format off

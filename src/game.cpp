@@ -4,6 +4,7 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include <vector>
+#include "maze_builder.h"
 #include "player.h"
 #include "sector.h"
 #include "vec2f.h"
@@ -50,6 +51,9 @@ Game::Game(int mapWidth, int mapHeight) {
   texture = nullptr;
   pixels = nullptr;
 
+  MazeBuilder m;
+  auto randomMap = m.generate(mapWidth - 2, mapHeight - 2);
+
   for (int m = 0; m < mapHeight; m++) {
     auto row = std::vector<int>(mapWidth, 0);
     worldMap.push_back(row);
@@ -63,6 +67,12 @@ Game::Game(int mapWidth, int mapHeight) {
   for (int k = 0; k < mapWidth; k++) {
     worldMap[0][k] = 1;
     worldMap[mapHeight - 1][k] = 1;
+  }
+
+  for (unsigned int a = 0; a < randomMap.size(); a++) {
+    for (unsigned int b = 0; b < randomMap[a].size(); b++) {
+      worldMap[a+1][b+1] = randomMap[a][b];
+    }
   }
 }
 
